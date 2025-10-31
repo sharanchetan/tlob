@@ -40,6 +40,9 @@ def hydra_app(config: Config):
     elif config.dataset.type == DatasetType.RMoney_NSE: ## Added for custom use.
         if config.model.type.value == "MLPLOB" or config.model.type.value == "TLOB":
             config.model.hyperparameters_fixed["hidden_dim"] = 40
+    elif config.dataset.type == DatasetType.Reliance_5_days:
+        if config.model.type.value == "MLPLOB" or config.model.type.value == "TLOB":
+            config.model.hyperparameters_fixed["hidden_dim"] = 50
     
     if config.dataset.type.value == "LOBSTER" and not config.experiment.is_data_preprocessed:
         # prepare the datasets, this will save train.npy, val.npy and test.npy in the data directory
@@ -86,6 +89,17 @@ def hydra_app(config: Config):
             # Add any specific preprocessing steps if required.
         except Exception as e:
             raise RuntimeError(f"Error in preprocessing RMoney NSE data: {e}")
+    
+    elif config.dataset.type == cst.DatasetType.Reliance_5_days and not config.experiment.is_data_preprocessed:
+        """
+        This part of code is only 
+        
+        """
+        try:
+            print("Please ensure that the Reliance 5 Days data is preprocessed and placed in the correct directory.")
+            # Add any specific preprocessing steps if required.
+        except Exception as e:
+            raise RuntimeError(f"Error in preprocessing Reliance 5 Days data: {e}")
 
     if config.experiment.is_wandb:
         if config.experiment.is_sweep:
@@ -122,7 +136,7 @@ if __name__ == "__main__":
         config_name="config",
         overrides=[
             "+model=tlob",
-            "+dataset=rmoney_nse",
+            "+dataset=reliance_5_days",
             "experiment.is_debug=True",
             "hydra.job.chdir=False"
         ],

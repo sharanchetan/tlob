@@ -7,8 +7,8 @@ class DatasetType(Enum):
     FI_2010 = "FI_2010"
     BTC = "BTC"
     RMoney_NSE = "RMoney_NSE" # Added for custom use.
+    Reliance_5_days = "Reliance_5_days" # Added for custom use.
     
-
 class ModelType(Enum):
     MLPLOB = "MLPLOB"
     TLOB = "TLOB"
@@ -20,9 +20,6 @@ class SamplingType(Enum):
     QUANTITY = "quantity"
     NONE = "none"
     
-
-
-
 
 # for 15 days of TSLA
 TSLA_LOB_MEAN_SIZE_10 = 165.44670902537212
@@ -56,7 +53,6 @@ INTC_EVENT_STD_DEPTH = 2.333747222206966
 
 
 
-
 LOBSTER_HORIZONS = [10, 20, 50, 100]
 PRECISION = 32
 N_LOB_LEVELS = 10
@@ -68,6 +64,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DIR_EXPERIMENTS = "data/experiments"
 DIR_SAVED_MODEL = "data/checkpoints"
 DATA_DIR = "data"
+RELIANCE_5_DAY = "/home/chetan/python_tlob_revised/TLOB/data"
 RECON_DIR = "data/reconstructions"
 PROJECT_NAME = "EvolutionData"
 SPLIT_RATES = [0.8, 0.1, 0.1]

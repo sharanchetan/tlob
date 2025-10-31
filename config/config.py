@@ -77,6 +77,15 @@ class RMoney_NSE(Dataset):
     batch_size: int = 128 # Need to undersrand the optimal batch size for this dataset.
     training_stocks: list = field(default_factory=lambda: ["RELIANCE"]) # Example stock.
     testing_stocks: list = field(default_factory=lambda: ["RELIANCE"]) # Example stock.
+    
+@dataclass
+class Reliance_5_days(Dataset):
+    type: DatasetType = DatasetType.Reliance_5_days
+    dates: list = field(default_factory=lambda: ["2025-08-04", "2025-08-08"])
+    sampling_type: SamplingType = SamplingType.NONE
+    batch_size: int = 128
+    training_stocks: list = field(default_factory=lambda: ["RELIANCE"])
+    testing_stocks: list = field(default_factory=lambda: ["RELIANCE"])
 
 @dataclass
 class Experiment:
@@ -87,8 +96,8 @@ class Experiment:
     is_debug: bool = False
     checkpoint_reference: str = ""
     seed: int = 1
-    horizon: int = 100 # Chnaged for custom use.
-    window_length: int = 50 # Changed for custom use.
+    horizon: int = 100  # Chnaged for custom use. HORIZON SHOULD BE GREATER THAN window_length
+    window_length: int = 10 # Changed for custom use. IMPORTANT: window_length should be smaller than horizon.
     max_epochs: int = 10
     dir_ckpt: str = "model.ckpt"
     optimizer: str = "Adam"
@@ -116,3 +125,4 @@ cs.store(group="dataset", name="lobster", node=LOBSTER)
 cs.store(group="dataset", name="fi_2010", node=FI_2010)
 cs.store(group="dataset", name="btc", node=BTC)
 cs.store(group="dataset", name="rmoney_nse", node=RMoney_NSE)
+cs.store(group="dataset", name="reliance_5_days", node=Reliance_5_days)

@@ -17,7 +17,8 @@ from preprocessing.dataset import Dataset, DataModule
 import constants as cst
 from constants import DatasetType, SamplingType
 torch.serialization.add_safe_globals([omegaconf.listconfig.ListConfig])
-from preprocessing.rmoney_nse import rmoney_nse_load  # Added for custom use.
+from preprocessing.rmoney_nse import rmoney_nse_load # Added for custom use.
+from preprocessing.reliance_5_day import reliance_5_days_load # Added for custom use.
 
 
 def run(config: Config, accelerator):
@@ -157,6 +158,26 @@ def train(config: Config, trainer: L.Trainer, run=None):
         path = cst.DATA_DIR + "/NSE_Custom/29_august_2025_2885.csv"
         train_input, train_labels, val_input, val_labels, test_input, test_labels = rmoney_nse_load(path, window_length, horizon)
         
+        train_set = Dataset(train_input, train_labels, seq_size)
+        val_set = Dataset(val_input, val_labels, seq_size)
+        test_set = Dataset(test_input, test_labels, seq_size)
+        if config.experiment.is_debug:
+            train_set.length = 1000
+            val_set.length = 1000
+            test_set.length = 10000
+        data_module = DataModule(
+            train_set=Dataset(train_input, train_labels, seq_size),
+            val_set=Dataset(val_input, val_labels, seq_size),
+            test_set=Dataset(test_input, test_labels, seq_size),
+            batch_size=config.dataset.batch_size,
+            test_batch_size=config.dataset.batch_size*4,
+            num_workers=4
+        )
+        test_loaders = [data_module.test_dataloader()]
+    
+    elif dataset_type == "Reliance_5_days":  # Added for custom use.
+        path = cst.RELIANCE_5_DAY + "/reliance_5_days"
+        train_input, train_labels, val_input, val_labels, test_input, test_labels = reliance_5_days_load(path, window_length, horizon)   
         train_set = Dataset(train_input, train_labels, seq_size)
         val_set = Dataset(val_input, val_labels, seq_size)
         test_set = Dataset(test_input, test_labels, seq_size)

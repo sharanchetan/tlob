@@ -16,3 +16,4 @@ data/FI_2010
 data/checkpoints
 .venv
 bin_normalize.ipynb
+data/

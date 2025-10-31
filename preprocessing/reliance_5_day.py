@@ -17,9 +17,9 @@ def _labeling_reliance_5_days(
                         and the third column is the best ask price. 
                         THIS IS DIFFERENT FROM THE ORIGINAL IMPLEMENTATION. 
         len (int): The time window smoothing length.
-        h (int): The prediction horizon.
+        h (int): The prediction horizon. According to the original paper, h is greater than len.
     """
-    # X is the orderbook
+    # X is the orderbook, in numpy array format, and NOT a pandas DataFrame.
     # len is the time window smoothing length
     # h is the prediction horizon
     assert len > 0, "Length must be greater than 0"
@@ -28,30 +28,40 @@ def _labeling_reliance_5_days(
     if h < len: # if h is smaller than len, we can't compute the labels
         len = h
     # Calculate previous and future mid-prices for all relevant indices
-    previous_ask_prices = np.lib.stride_tricks.sliding_window_view(X[:, 2], window_shape=len)[:-h]
-    previous_bid_prices = np.lib.stride_tricks.sliding_window_view(X[:, 0], window_shape=len)[:-h]
-    future_ask_prices = np.lib.stride_tricks.sliding_window_view(X[:, 2], window_shape=len)[h:]
-    future_bid_prices = np.lib.stride_tricks.sliding_window_view(X[:, 0], window_shape=len)[h:]
+    
+    """
+    Here, previous_ask_price is a numpy array. each array element has number of constituent = len.
+    Why are we using sliding_window_view? To get an array with number of elements = len, for each time step. 
+    Why is [:h] used? To align the previous prices with future prices. NOO, it's there only because your sliding wingdow wont be able to slide at the bottom, daaa.
+    example:
+    if X has shape (8828536,40) and sliding window has length 5, then previous_ask_prices will have shape (8828532,5) because firt 4 rows cannot have previous 5 ask prices.
+    
+    """
+    previous_ask_prices_twodim_array = np.lib.stride_tricks.sliding_window_view(X[:, 2], window_shape=len)[:-h]
+    previous_bid_prices_twodim_array = np.lib.stride_tricks.sliding_window_view(X[:, 0], window_shape=len)[:-h]
+    future_ask_prices_twodim_array = np.lib.stride_tricks.sliding_window_view(X[:, 2], window_shape=len)[h:]
+    future_bid_prices_twodim_array = np.lib.stride_tricks.sliding_window_view(X[:, 0], window_shape=len)[h:]
 
-    previous_mid_prices = (previous_ask_prices + previous_bid_prices) / 2
-    future_mid_prices = (future_ask_prices + future_bid_prices) / 2
+    previous_mid_prices_twodim_array = (previous_ask_prices_twodim_array + previous_bid_prices_twodim_array) / 2
+    future_mid_prices_twodim_array = (future_ask_prices_twodim_array + future_bid_prices_twodim_array) / 2
 
-    previous_mid_prices = np.mean(previous_mid_prices, axis=1)
-    future_mid_prices = np.mean(future_mid_prices, axis=1)
+    previous_mid_prices_onedim_array = np.mean(previous_mid_prices_twodim_array, axis=1)
+    future_mid_prices_onedim_array = np.mean(future_mid_prices_twodim_array, axis=1)
 
     # Compute percentage change
-    percentage_change = (future_mid_prices - previous_mid_prices) / previous_mid_prices
+    percentage_change_onedim_array = (future_mid_prices_onedim_array - previous_mid_prices_onedim_array) / previous_mid_prices_onedim_array
     
     # alpha is the average percentage change of the stock
-    alpha = np.abs(percentage_change).mean() / 2
+    alpha = np.abs(percentage_change_onedim_array).mean() #/ 2
+    alpha = max(alpha, 1e-4)  # setting a minimum threshold for alpha
     
     # alpha is the average spread of the stock in percentage of the mid-price
     #alpha = (X[:, 0] - X[:, 2]).mean() / ((X[:, 0] + X[:, 2]) / 2).mean()
         
-    #print(f"Alpha: {alpha}")
-    labels = np.where(percentage_change < -alpha, 2, np.where(percentage_change > alpha, 0, 1))
-    #print(f"Number of labels: {np.unique(labels, return_counts=True)}")
-    #print(f"Percentage of labels: {np.unique(labels, return_counts=True)[1] / labels.shape[0]}")
+    print(f"Alpha: {alpha}")
+    labels = np.where(percentage_change_onedim_array < -alpha, 2, np.where(percentage_change_onedim_array > alpha, 0, 1))
+    print(f"Number of labels: {np.unique(labels, return_counts=True)}")
+    print(f"Percentage of labels: {np.unique(labels, return_counts=True)[1] / labels.shape[0]}")
     return labels
 
 def _z_score_normalization_reliance(
