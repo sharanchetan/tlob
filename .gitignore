@@ -12,7 +12,7 @@ env
 preprocessing/digital*
 data/checkpoints/TLOB/v*
 data/NSE_Custom
-data/FI_2010
+data/FI_2010/*
 data/checkpoints
 .venv
 bin_normalize.ipynb
