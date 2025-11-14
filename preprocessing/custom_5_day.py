@@ -5,7 +5,7 @@ import torch
 from typing import Tuple
 import os
 
-def _labeling_reliance_5_days(
+def _labeling_custom_5_days(
     X: ndarray,
     len: int,
     h: int):
@@ -64,7 +64,7 @@ def _labeling_reliance_5_days(
     print(f"Percentage of labels: {np.unique(labels, return_counts=True)[1] / labels.shape[0]}")
     return labels
 
-def _z_score_normalization_reliance(
+def _z_score_normalization_custom(
     df: pd.DataFrame
     ) -> pd.DataFrame:
     """Apply z-score normalization to the DataFrame.
@@ -98,7 +98,7 @@ def _directory_to_dataframe(directory_path:str)->pd.DataFrame:
     sorted_list_of_csv = sorted(list_of_csv)
     list_of_dfs=[]
     for csv in sorted_list_of_csv:
-        df = pd.read_csv(f"/home/chetan/python_tlob_revised/TLOB/data/reliance_5_days/{csv}")
+        df = pd.read_csv(f"/home/jovyan/tlob/data/custom_5_days/{csv}")
         df =  df[df['Spread'] >= 0].reset_index(drop=True)
         if df['Timestamp'].is_monotonic_increasing:
             df = df.drop(columns=["Timestamp","MidPrice","Spread"])
@@ -109,7 +109,7 @@ def _directory_to_dataframe(directory_path:str)->pd.DataFrame:
     return final_df
 
 
-def reliance_5_days_load(
+def custom_5_days_load(
     path: str,
     window_length: int,
     horizon: int
@@ -125,9 +125,9 @@ def reliance_5_days_load(
     """
     
     new_lob = _directory_to_dataframe(path)
-    labels = _labeling_reliance_5_days(new_lob.values, len=window_length, h=horizon)
+    labels = _labeling_custom_5_days(new_lob.values, len=window_length, h=horizon)
     aligned_lob = new_lob.iloc[window_length - 1 : -horizon, :]
-    z_score_normalized_lob = _z_score_normalization_reliance(aligned_lob)
+    z_score_normalized_lob = _z_score_normalization_custom(aligned_lob)
     final_df = z_score_normalized_lob.copy()
     final_df['Label'] = labels
     final_df.reset_index(drop=True, inplace=True)
